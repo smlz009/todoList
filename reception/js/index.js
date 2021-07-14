@@ -1,5 +1,14 @@
-function callback(data) {
-    console.log(data); 
+function render(data){
+    if(data.length){
+        document.querySelector('.todo-main').style.display = 'block'
+        document.querySelector('.todo-footer').style.display = 'block'
+        document.querySelector('.tip').style.display = 'none'
+
+    }else{
+        document.querySelector('.todo-main').style.display = 'none'
+        document.querySelector('.todo-footer').style.display = 'none'
+        document.querySelector('.tip').style.display = 'block'
+    }
     let arr = data.map((item) => {
         return(`
         <li _id="${item._id}">
@@ -25,6 +34,10 @@ function callback(data) {
     sumSpan.textContent = sum
 }
 
+function callback(data) {
+    render(data)
+}
+
 
 const script = document.createElement('script');
 script.src = 'http://127.0.0.1:5000/todoData?callback=callback';
@@ -33,7 +46,8 @@ document.body.appendChild(script);
 const todo = document.querySelector('.todo-header input')
 todo.onkeydown = async function(e){
     if(e.keyCode === 13){
-        const value = this.value
+        const value = this.value.trim()
+        if(!value) return
         const ruselt = await myAjax({
             url:'http://127.0.0.1:5000/addData',
             type:'post',
@@ -41,13 +55,12 @@ todo.onkeydown = async function(e){
                 todoListName:value
             }
         })
-        callback(ruselt)
+        render(ruselt)
         todo.value = ''
     }
 }
 
 const todoMain = document.querySelector('.todo-main')
-console.log(todoMain);
 
 todoMain.onmouseover = function(e){
     // e.target.lastElementChild.style.display = 'block'
@@ -70,19 +83,64 @@ todoMain.onmouseout = function(e){
 
 todoMain.onclick = async function(e){
     if(e.target.tagName === 'BUTTON'){
-        const arr = [e.target.parentNode.getAttribute('_id')]
-        console.log(arr);
-        const a = await myAjax({
+        let arr = [e.target.parentNode.getAttribute('_id')]
+        arr = JSON.stringify(arr)
+        const result = await myAjax({
             url:'http://127.0.0.1:5000/deleteAllData',
             type:'post',
             data:{
                 ids:arr
             }
         })
-        callback(a)
-        
-
+        callback(result)
         // 
+    }
+    if(e.target.tagName === 'INPUT'){
+        const status = e.target.checked;
+        const id = e.target.parentNode.parentNode.getAttribute('_id')
+        const result = await myAjax({
+            url:'http://127.0.0.1:5000/updateData',
+            type:'post',
+            data:{
+                id,
+                isDone:status
+            }
+        })
+        render(result)
+    }
+}
+
+const todoFooter = document.querySelector('.todo-footer')
+todoFooter.onclick = async function(e){
+    if(e.target.tagName === 'INPUT'){
+        const status = e.target.checked;
+        const result = await myAjax({
+            url:'http://127.0.0.1:5000/updateAllData',
+            type:'post',
+            data:{
+                isDone:status
+            }
+        })
+        render(result)
+    }
+
+    if(e.target.tagName === 'BUTTON'){
+        const lis = document.querySelectorAll('.todo-main li'); 
+        const chencks = document.querySelectorAll('.todo-main input[checked]')
+        console.log(chencks);
+        let arr = Array.from(chencks).map((item) => {
+            return item.parentNode.parentNode.getAttribute('_id')
+        })
+        arr = JSON.stringify(arr)
+        console.log(arr);
+        const result = await myAjax({
+            url:'http://127.0.0.1:5000/deleteAllData',
+            type:'post',
+            data:{
+                ids:arr
+            }
+        })
+        render(result)
     }
 }
 

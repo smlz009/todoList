@@ -1,7 +1,7 @@
 function myAjax(options){
     let {url,type = 'get',data} = options;
     if(!url) return
-    
+    console.log(data);
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         data = data && newData(data)

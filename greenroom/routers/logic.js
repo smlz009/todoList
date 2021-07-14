@@ -36,9 +36,10 @@ router.post('/updateAllData',async(req,res) => {
 
 router.post('/deleteAllData',async(req,res) => {
     let {ids} = req.body
-    const arr = [ids]
-    // ids = JSON.parse(ids)
-    await delAll(arr)
+    // console.log(ids);
+    ids = JSON.parse(ids)
+
+    await delAll(ids)
     const result = await find() 
     res.send(result)
 })
